@@ -1,7 +1,6 @@
 import numpy as np
 
-def accuracy(X, R, CANDECOMP):
-  (s, A, B, C) = CANDECOMP(X, R)
+def accuracy(X, R, s, A, B, C):
   Y = np.einsum('r,ir,jr,kr->ijk', s, A, B, C)
   error = np.sum((X - Y)**2)/np.sum(X**2)
   return error
