@@ -8,6 +8,7 @@ from utils import *
 #Important plotting parameters:
 trials = 4 #Number of trials when benchmarking
 tol = 0.001 #How long to run these things for
+epsilon = 0.001 #How long to run these things for
 nbars = 10 #Approximately how many bars to use
 
 n_1 = 20
@@ -71,7 +72,7 @@ for tensor in tensors:
 
   plt.xlabel('Time Spent Computing CANDECOMP (s)')
   plt.ylabel('Relative Sum Of Squared Residual Error')
-  plt.title('Sum Of Squared Error vs. Time To Factorize %s Tensor'%tensor["name"])
+  plt.title('Sum Of Squared Error vs. Time To Factorize Rank %d Tensor %s' % (tensor["rank"], tensor["name"]))
   plt.legend(loc='best')
   plt.savefig(plot_name)
   plt.clf()
