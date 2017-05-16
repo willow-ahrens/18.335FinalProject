@@ -44,35 +44,35 @@ decomps = [{"name"  : "TensorFlow Gradient Descent",
 #Plot 1
 
 for tensor in tensors:
-  plot_name = "plot1_%s.pdf" % tensor["name"]
-  print("Creating %s..." % plot_name)
-  for decomp in decomps:
-    print("Running %s..." % decomp["name"])
-    X = [tensor["data"]() for trial in range(trials)]
-    total = -time.clock()
-    errors_collection = []
-    for trial in range(trials):
-      errors_collection.append(decomp["func"](X[trial], tensor["rank"], tol = tol)[4])
-    total += time.clock()
-    timestep = total/sum([len(errors) for errors in errors_collection])
-    errors = np.zeros((trials, max([len(errors) for errors in errors_collection])))
-    for i in range(trials):
-      for j in range(errors.shape[1]):
-        if j >= len(errors_collection[i]):
-          errors[i][j] = errors_collection[i][- 1]
-        else:
-          errors[i][j] = errors_collection[i][j]
-    hi_bars = np.max(errors, axis = 0) - np.mean(errors, axis = 0)
-    lo_bars = np.mean(errors, axis = 0) - np.min(errors, axis = 0)
-    errors = np.mean(errors, axis = 0)
-    times = np.array(range(len(errors))) * timestep
-    plt.plot(times, errors, color = decomp["color"], label = decomp["name"])
-    nbarsp = len(times) // nbars
-    plt.errorbar(times[0::nbarsp], errors[0::nbarsp], yerr = [lo_bars[0::nbarsp], hi_bars[0::nbarsp]], color = decomp["color"], linestyle="")
+    plot_name = "plot1_%s.pdf" % tensor["name"]
+    print("Creating %s..." % plot_name)
+    for decomp in decomps:
+        print("Running %s..." % decomp["name"])
+        X = [tensor["data"]() for trial in range(trials)]
+        total = -time.clock()
+        errors_collection = []
+        for trial in range(trials):
+            errors_collection.append(decomp["func"](X[trial], tensor["rank"], tol = tol)[4])
+        total += time.clock()
+        timestep = total/sum([len(errors) for errors in errors_collection])
+        errors = np.zeros((trials, max([len(errors) for errors in errors_collection])))
+        for i in range(trials):
+            for j in range(errors.shape[1]):
+                if j >= len(errors_collection[i]):
+                    errors[i][j] = errors_collection[i][- 1]
+                else:
+                    errors[i][j] = errors_collection[i][j]
+        hi_bars = np.max(errors, axis = 0) - np.mean(errors, axis = 0)
+        lo_bars = np.mean(errors, axis = 0) - np.min(errors, axis = 0)
+        errors = np.mean(errors, axis = 0)
+        times = np.array(range(len(errors))) * timestep
+        plt.plot(times, errors, color = decomp["color"], label = decomp["name"])
+        nbarsp = len(times) // nbars
+        plt.errorbar(times[0::nbarsp], errors[0::nbarsp], yerr = [lo_bars[0::nbarsp], hi_bars[0::nbarsp]], color = decomp["color"], linestyle="")
 
-  plt.xlabel('Time Spent Computing CANDECOMP (s)')
-  plt.ylabel('Relative Sum Of Squared Residual Error')
-  plt.title('Sum Of Squared Error vs. Time To Factorize Rank %d Tensor %s' % (tensor["rank"], tensor["name"]))
-  plt.legend(loc='best')
-  plt.savefig(plot_name)
-  plt.clf()
+    plt.xlabel('Time Spent Computing CANDECOMP (s)')
+    plt.ylabel('Relative Sum Of Squared Residual Error')
+    plt.title('Sum Of Squared Error vs. Time To Factorize Rank %d Tensor %s' % (tensor["rank"], tensor["name"]))
+    plt.legend(loc='best')
+    plt.savefig(plot_name)
+    plt.clf()
