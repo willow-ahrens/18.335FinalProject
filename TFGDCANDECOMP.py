@@ -1,9 +1,9 @@
 import os
 import tensorflow as tf
-tf.logging.set_verbosity(tf.logging.ERROR)
+#tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 
-def TFGDCANDECOMP(X, R, maxsteps=1000, tol=0.0001):
+def TFGDCANDECOMP(X, R, maxsteps=5000, tol=0.0001):
   T = tf.as_dtype(X.dtype)
   A = tf.Variable(tf.random_normal((X.shape[0], R), dtype=T), dtype = T)
   B = tf.Variable(tf.random_normal((X.shape[1], R), dtype=T), dtype = T)
