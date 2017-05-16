@@ -9,7 +9,7 @@ def TFGDCANDECOMP(X, R, maxsteps=5000, tol=0.0001):
     B = tf.Variable(tf.random_normal((X.shape[1], R), dtype=T), dtype = T)
     C = tf.Variable(tf.random_normal((X.shape[2], R), dtype=T), dtype = T)
     Y = tf.einsum('ir,jr,kr->ijk', A, B, C)
-    loss = tf.reduce_sum(tf.square(X - Y))
+    loss = tf.norm(X-Y)**2  # Use square norm for objective. 
 
     optimizer = tf.train.GradientDescentOptimizer(0.0001)
     train = optimizer.minimize(loss)
@@ -17,15 +17,15 @@ def TFGDCANDECOMP(X, R, maxsteps=5000, tol=0.0001):
     sess = tf.Session()
     sess.run(init, {})
 
-    X_sq = np.sum(X**2)
+    #X_sq = np.sum(X**2)
 
     error = np.zeros(maxsteps + 1)
     step = 0
-    error[0] = sess.run(loss, {})/X_sq
+    error[0] = sess.run(loss, {})
     while step < maxsteps:
         step += 1
         sess.run(train, {})
-        error[step] = sess.run(loss, {})/X_sq
+        error[step] = sess.run(loss, {})
         if error[step - 1] - error[step] < tol:
             break
 
