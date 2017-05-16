@@ -50,6 +50,7 @@ def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001):
     print C.shape
     print errors.shape
     return A, B, C, errors
+
 #boring accuracy test examples
 def main():
     X = NormalTensorComposition((10, 10, 10), 5)

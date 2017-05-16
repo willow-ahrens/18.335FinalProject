@@ -1,4 +1,5 @@
 import numpy as np
+import itertools
 
 def PI(M): #Pseudoinverse
     return np.linalg.inv(np.dot(M.T, M)).dot(M.T)
@@ -42,7 +43,38 @@ def Unfold(T, mode="I"):
             a.append(T[i, :, :])
         return np.vstack(a)
 
-def 
+
+def delta(A, B):
+    s = 0
+    assert A.shape == B.shape, "Factor matrix \
+    shapes don't match!"
+    for j in range(A.shape[1]):
+        u, v = A[:, j], B[:, j]
+        s += np.linalg.norm(u - (np.dot(v.T, u)/np.dot(v.T, v)).dot(v))
+    return s
+
+def exact_factor_acc(M_hat, M):
+    # M and M_hat are vertically stacked A,B,C factor matrices
+    # M is ground truth
+    # M_hat is estimated
+    assert M_hat.shape == M.shape, "Factor matrix \
+    shapes don't match!"
+    ncols = M.shape[0]
+    perms = list(itertools.permutations(range(ncols)))
+    errors = np.zeros(len(perms))
+    for i, perm in enumerate(perms):
+        perm = list(perm)
+        errors[i] = delta(M[:, perm], M_hat)
+    min_idx = np.argmin(errors)
+    return errors[min_idx], perms[min_idx]
+
+def approximate_factor_acc(M_hat, M):
+    # M and M_hat are vertically stacked A,B,C factor matrices
+    # M is ground truth
+    # M_hat is estimated
+    assert M_hat.shape == M.shape, "Factor matrix \
+    shapes don't match!"
+    ncols = M.shape[0]
 
 
 def accuracy(X, R, s, A, B, C):
