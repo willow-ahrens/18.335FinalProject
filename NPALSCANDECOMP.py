@@ -11,8 +11,11 @@ def PIR(M, eta = 0.000001):  #implements PseudoInverse with a eta
     d = np.dot(M.T, M) + eta*np.eye(MM.shape[0], MM.shape[1])
     return np.linalg.inv(d).dot(M.T)
 
-def NPIR(M):
+def SPIR(M):
     return pinv(M)
+
+def NPIR(M):
+    return np.linalg.pinv(M)
 
 def KR(A, H):  #implements Khatri-Rao product
     assert A.shape[1] == H.shape[1], "Can't take KR product,\
@@ -51,39 +54,43 @@ def F(T, A, B, C, mode="A"):
         return (NPIR(KR(A, B)).dot(Unfold(T, mode="I"))).T
 
 
-def NPALSCANDECOMP(X, R, maxsteps=1000, tol=0.001):
+def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001):
     I, J, K = X.shape
-    A = 2*np.random.rand(I, R)
-    B = 2*np.random.rand(J, R)
-    C = 2*np.random.rand(K, R)
+    A = np.random.randn(I, R)
+    B = np.random.randn(J, R)
+    C = np.random.randn(K, R)
     Y = np.einsum('ir,jr,kr->ijk',A,B,C)
     X_sq = np.sum(X**2)
     step = 0
     error = np.zeros(maxsteps + 1)
-    error[0] = np.sum((X - Y)**2)/np.sum(X**2)
+    error[0] = np.linalg.norm(X-Y)**2
     while step < maxsteps:
         step += 1
         B = F(X,A,B,C, mode="B")
         C = F(X,A,B,C, mode="C")
         A = F(X,A,B,C, mode="A")
         Y = np.einsum('ir,jr,kr->ijk',A,B,C)
-        e = np.sum((X - Y)**2)/np.sum(X**2)
+        e = np.linalg.norm(X-Y)**2
         error[step] = e
-        if abs(error[step - 1] - error[step]) < tol:
+        if error[step - 1] - error[step] < tol:
             print "Tolerance limit reached, stopping!"
             break
         #print(type(e))
-    a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
-    A /= a_nrm
-    b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
-    B /= b_nrm
-    c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
-    C /= c_nrm
+    # a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
+    # A /= a_nrm
+    # b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
+    # B /= b_nrm
+    # c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
+    # C /= c_nrm
 
-    error = error[0: step + 1]
+    errors = error[0: step + 1]
 
-    return (a_nrm * b_nrm * c_nrm, A, B, C, error)
-
+    # return (a_nrm * b_nrm * c_nrm, A, B, C, error)
+    print A.shape
+    print B.shape
+    print C.shape
+    print errors.shape
+    return A, B, C, errors
 #boring accuracy test examples
 def main():
     X = NormalTensorComposition((10, 10, 10), 5)
