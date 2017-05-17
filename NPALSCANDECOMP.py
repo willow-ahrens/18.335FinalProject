@@ -13,46 +13,56 @@ def F(T, A, B, C, mode="A"):
         return (NPIR(KR(A, B)).dot(Unfold(T, mode="I"))).T
 
 
-def NPALSCANDECOMP(X, R, maxtime=0, maxsteps=2000, tol=0.000001, true = None):
+def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001, true=None):
     I, J, K = X.shape
     A = np.random.randn(I, R)
     B = np.random.randn(J, R)
     C = np.random.randn(K, R)
-    Y = np.einsum('ir,jr,kr->ijk',A,B,C)
+    Y = np.einsum('ir,jr,kr->ijk', A, B, C)
+    X_sq = np.linalg.norm(X)
     step = 0
-    M = np.vstack([true[0], true[1], true[2]])
-    M_hat = np.vstack([A, B, C])
+    times = []
     error = np.zeros(maxsteps + 1)
     error[0] = np.linalg.norm(X-Y)**2
-    fac_error = np.zeros(maxsteps + 1)
-    fac_error[0],_ = exact_factor_acc(M_hat, M)
-    tic = time.clock()
-    while maxsteps == 0 or step < maxsteps:
+    if true:
+        M = np.vstack([true[0], true[1], true[2]])
+        M_hat = np.vstack([A, B, C])
+        fac_error = np.zeros(maxsteps + 1)
+        fac_error[0],_ = exact_factor_acc(M_hat, M)
+    while step < maxsteps:
         step += 1
+        # start time
+        tic = time.time()
         B = F(X,A,B,C, mode="B")
         C = F(X,A,B,C, mode="C")
         A = F(X,A,B,C, mode="A")
         Y = np.einsum('ir,jr,kr->ijk',A,B,C)
-        e = np.linalg.norm(X-Y)**2
+        e = np.linalg.norm(X-Y)**2/X_sq
+        toc = time.time()
+        times.append(toc-tic)
+        # end time
         error[step] = e
-        M_hat = np.vstack([A, B, C])
-        fac_error[step], _ = exact_factor_acc(M_hat, M)
-        if tol > 0 and error[step - 1] - error[step] < tol:
-            break
-        if maxtime > 0 and time.clock() - tic > maxtime:
+        if true:
+            M_hat = np.vstack([A, B, C])
+            fac_error[step], _ = exact_factor_acc(M_hat, M)
+        if error[step - 1] - error[step] < tol:
+            print "Tolerance limit reached, stopping!"
             break
         #print(type(e))
-    # a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
-    # A /= a_nrm
-    # b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
-    # B /= b_nrm
-    # c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
-    # C /= c_nrm
-
+    a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
+    A /= a_nrm
+    b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
+    B /= b_nrm
+    c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
+    C /= c_nrm
+    total_time = np.sum(np.asarray(times))
     errors = error[0: step + 1]
-    fac_errors = fac_error[0: step + 1]
-    # return (a_nrm * b_nrm * c_nrm, A, B, C, error)
-    return A, B, C, errors, fac_errors
+    if true:
+        fac_errors = fac_error[0: step + 1]
+        return (a_nrm * b_nrm * c_nrm, A, B, C, errors, fac_errors, total_time)
+    else:
+        return (a_nrm * b_nrm * c_nrm, A, B, C, errors, total_time)
+    # return A, B, C, errors, fac_errors
 
 #boring accuracy test examples
 def main():

@@ -94,10 +94,7 @@ def largest_norm(M):
     return np.argmax(col_norms)
 
 
-def exact_factor_acc(M_hat, M):
-    # M and M_hat are vertically stacked A,B,C factor matrices
-    # M is ground truth
-    # M_hat is estimated
+def exact_factor_acc(s_hat, M_hat, s, M):
     assert M_hat.shape == M.shape, "Factor matrix \
     shapes don't match!"
     ncols = M.shape[1]
