@@ -6,10 +6,9 @@ import numpy as np
 stepsize = 0.0001
 
 def NPGDCANDECOMP(X, R, maxsteps=5000, tol=0.0001):
-    T = X.dtype
-    A = np.random_normal((X.shape[0], R), dtype=T)
-    B = np.random_normal((X.shape[1], R), dtype=T)
-    C = np.random_normal((X.shape[2], R), dtype=T)
+    A = np.random.randn(X.shape[0], R)
+    B = np.random.randn(X.shape[1], R)
+    C = np.random.randn(X.shape[2], R)
     Y = np.einsum('ir,jr,kr->ijk', A, B, C)
     loss = np.sum((X - Y)**2)
 
@@ -32,14 +31,13 @@ def NPGDCANDECOMP(X, R, maxsteps=5000, tol=0.0001):
         if error[step - 1] - error[step] < tol:
             break
 
-    (A_out, B_out, C_out) = sess.run([A, B, C], {})
-    a_nrm = np.linalg.norm(A_out, ord = 2, axis = 0)
-    A_out /= a_nrm
-    b_nrm = np.linalg.norm(B_out, ord = 2, axis = 0)
-    B_out /= b_nrm
-    c_nrm = np.linalg.norm(C_out, ord = 2, axis = 0)
-    C_out /= c_nrm
+    a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
+    A /= a_nrm
+    b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
+    B /= b_nrm
+    c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
+    C /= c_nrm
 
     error = error[0: step + 1]
 
-    return (a_nrm * b_nrm * c_nrm, A_out, B_out, C_out, error)
+    return (a_nrm * b_nrm * c_nrm, A, B, C, error)
