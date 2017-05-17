@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.linalg import pinv
 from utils import *
-import os
 import pdb
+import time
 
 def F(T, A, B, C, mode="A"):
     if mode == "A":
@@ -13,7 +13,7 @@ def F(T, A, B, C, mode="A"):
         return (NPIR(KR(A, B)).dot(Unfold(T, mode="I"))).T
 
 
-def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001, true = None):
+def NPALSCANDECOMP(X, R, maxtime=0, maxsteps=2000, tol=0.000001, true = None):
     I, J, K = X.shape
     A = np.random.randn(I, R)
     B = np.random.randn(J, R)
@@ -26,7 +26,8 @@ def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001, true = None):
     error[0] = np.linalg.norm(X-Y)**2
     fac_error = np.zeros(maxsteps + 1)
     fac_error[0],_ = exact_factor_acc(M_hat, M)
-    while step < maxsteps:
+    tic = time.clock()
+    while maxsteps == 0 or step < maxsteps:
         step += 1
         B = F(X,A,B,C, mode="B")
         C = F(X,A,B,C, mode="C")
@@ -36,8 +37,9 @@ def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001, true = None):
         error[step] = e
         M_hat = np.vstack([A, B, C])
         fac_error[step], _ = exact_factor_acc(M_hat, M)
-        if error[step - 1] - error[step] < tol:
-            print "Tolerance limit reached, stopping!"
+        if tol > 0 and error[step - 1] - error[step] < tol:
+            break
+        if maxtime > 0 and time.clock() - tic > maxtime:
             break
         #print(type(e))
     # a_nrm = np.linalg.norm(A, ord = 2, axis = 0)

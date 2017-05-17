@@ -1,26 +1,27 @@
-import os
 import tensorflow as tf
-#tf.logging.set_verbosity(tf.logging.ERROR)
+tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
 from scipy.optimize import fmin
+import time
+import test
 
-guess = 0.01
-
-def NPGDCANDECOMP(X, R, maxsteps=5000, tol=0.0001):
+def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
     A = np.random.randn(X.shape[0], R)
     B = np.random.randn(X.shape[1], R)
     C = np.random.randn(X.shape[2], R)
     Y = np.einsum('ir,jr,kr->ijk', A, B, C)
-    loss = np.sum((X - Y)**2)
+    loss = np.linalg.norm(X - Y)**2
 
-    X_sq = np.sum(X**2)
+    X_sq = np.linalg.norm(X)**2
 
-    stepsize = guess
+    stepsize = 0.01 #initial stepsize guess
 
     error = np.zeros(maxsteps + 1)
     step = 0
     error[0] = loss/X_sq
-    while step < maxsteps:
+    elapsed = 0
+    while maxsteps == 0 or step < maxsteps:
+        tic = time.clock()
         step += 1
         gA = 2 * (np.einsum('lt,jt,kt,js,ks->ls',A,B,C,B,C) - np.einsum('ljk,js,ks->ls',X,B,C))
         gB = 2 * (np.einsum('it,lt,kt,is,ks->ls',A,B,C,A,C) - np.einsum('ilk,is,ks->ls',X,A,C))
@@ -30,9 +31,13 @@ def NPGDCANDECOMP(X, R, maxsteps=5000, tol=0.0001):
         B -= gB * stepsize
         C -= gC * stepsize
         Y = np.einsum('ir,jr,kr->ijk', A, B, C)
-        loss = np.sum((X - Y)**2)
+        loss = np.linalg.norm(X - Y)**2
         error[step] = loss/X_sq
-        if error[step - 1] - error[step] < tol:
+        toc = time.clock()
+        elapsed += toc - tic
+        if tol > 0 and error[step - 1] - error[step] < tol:
+            break
+        if maxtime > 0 and elapsed > maxtime:
             break
 
     a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
@@ -45,3 +50,6 @@ def NPGDCANDECOMP(X, R, maxsteps=5000, tol=0.0001):
     error = error[0: step + 1]
 
     return (a_nrm * b_nrm * c_nrm, A, B, C, error)
+
+if __name__=="__main__":
+    test(NPGDCANDECOMP)
