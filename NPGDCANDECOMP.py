@@ -10,15 +10,20 @@ def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
     B = np.random.randn(X.shape[1], R)
     C = np.random.randn(X.shape[2], R)
     Y = np.einsum('ir,jr,kr->ijk', A, B, C)
-    loss = np.linalg.norm(X - Y)**2
-
     X_sq = np.linalg.norm(X)**2
+
+    A_history = []
+    B_history = []
+    C_history = []
+    A_history.append(A)
+    B_history.append(B)
+    C_history.append(C)
 
     stepsize = 0.01 #initial stepsize guess
 
     error = np.zeros(maxsteps + 1)
     step = 0
-    error[0] = loss/X_sq
+    error[0] = np.linalg.norm(X - Y)**2/X_sq
     elapsed = 0
     while maxsteps == 0 or step < maxsteps:
         tic = time.clock()
@@ -31,25 +36,34 @@ def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
         B -= gB * stepsize
         C -= gC * stepsize
         Y = np.einsum('ir,jr,kr->ijk', A, B, C)
-        loss = np.linalg.norm(X - Y)**2
-        error[step] = loss/X_sq
+        error[step] = np.linalg.norm(X - Y)**2/X_sq
         toc = time.clock()
+
         elapsed += toc - tic
+        A_history.append(A)
+        B_history.append(B)
+        C_history.append(C)
+
         if tol > 0 and error[step - 1] - error[step] < tol:
             break
         if maxtime > 0 and elapsed > maxtime:
             break
 
     a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
-    A /= a_nrm
     b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
-    B /= b_nrm
     c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
-    C /= c_nrm
 
-    error = error[0: step + 1]
-
-    return (a_nrm * b_nrm * c_nrm, A, B, C, error)
+    results = {}
+    results["s"] = a_nrm * b_nrm * c_nrm
+    results["A"] = A/a_nrm
+    results["B"] = B/b_nrm
+    results["C"] = C/c_nrm
+    results["error_history"] = error[0: step + 1]
+    results["A_history"] = A_history
+    results["B_history"] = B_history
+    results["C_history"] = C_history
+    results["time"] = elapsed
+    return results
 
 if __name__=="__main__":
-    test(NPGDCANDECOMP)
+    test.test(NPGDCANDECOMP)
