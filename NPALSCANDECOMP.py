@@ -54,15 +54,15 @@ def NPALSCANDECOMP(X, R, maxtime = 0, maxsteps=2000, tol=0.000001):
     C /= c_nrm
     total_time = np.sum(np.asarray(times))
     errors = error[0: step + 1]
-    r = {}
-    r["s"] = a_nrm * b_nrm * c_nrm
-    r["A"] = A
-    r["B"] = B
-    r["C"] = C
-    r["error_history"] = errors
-    r["A_history"] = A_history
-    r["B_history"] = B_history
-    r["C_history"] = C_history
+    results = {}
+    results["s"] = a_nrm * b_nrm * c_nrm
+    results["A"] = A
+    results["B"] = B
+    results["C"] = C
+    results["error_history"] = errors
+    results["A_history"] = A_history
+    results["B_history"] = B_history
+    results["C_history"] = C_history
     return r
 
 if __name__=="__main__":

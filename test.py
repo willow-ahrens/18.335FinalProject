@@ -5,7 +5,7 @@ def test(CANDECOMP):
   #boring accuracy test examples
   X = NormalTensorComposition((10, 10, 10), 5)
   for r in range(1, 10):
-      (s, A, B, C, error) = CANDECOMP(X, r)
+      r = CANDECOMP(X, r)
       print("Approximating rank 5 with R = %d error: %g" % (r, accuracy(X, r, s, A, B, C)))
 
   #fun sanity example
