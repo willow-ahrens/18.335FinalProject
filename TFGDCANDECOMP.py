@@ -23,17 +23,14 @@ def TFGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
     error = np.zeros(maxsteps + 1)/X_sq
     step = 0
     error[0] = sess.run(loss, {})
-    elapsed = 0
+    tic = time.clock()
     while maxsteps == 0 or step < maxsteps:
-        tic = time.clock()
         step += 1
         sess.run(train, {})
         error[step] = sess.run(loss, {})/X_sq
-        toc = time.clock()
-        elapsed += toc - tic
         if tol > 0 and error[step - 1] - error[step] < tol:
             break
-        if maxtime > 0 and elapsed > maxtime:
+        if maxtime > 0 and time.clock() - tic > maxtime:
             break
 
     (A_out, B_out, C_out) = sess.run([A, B, C], {})
