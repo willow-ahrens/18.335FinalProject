@@ -13,16 +13,19 @@ def F(T, A, B, C, mode="A"):
         return (NPIR(KR(A, B)).dot(Unfold(T, mode="I"))).T
 
 
-def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001):
+def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001, true = None):
     I, J, K = X.shape
     A = np.random.randn(I, R)
     B = np.random.randn(J, R)
     C = np.random.randn(K, R)
     Y = np.einsum('ir,jr,kr->ijk',A,B,C)
-    X_sq = np.sum(X**2)
     step = 0
+    M = np.vstack([true[0], true[1], true[2]])
+    M_hat = np.vstack([A, B, C])
     error = np.zeros(maxsteps + 1)
     error[0] = np.linalg.norm(X-Y)**2
+    fac_error = np.zeros(maxsteps + 1)
+    fac_error[0],_ = exact_factor_acc(M_hat, M)
     while step < maxsteps:
         step += 1
         B = F(X,A,B,C, mode="B")
@@ -31,6 +34,8 @@ def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001):
         Y = np.einsum('ir,jr,kr->ijk',A,B,C)
         e = np.linalg.norm(X-Y)**2
         error[step] = e
+        M_hat = np.vstack([A, B, C])
+        fac_error[step], _ = exact_factor_acc(M_hat, M)
         if error[step - 1] - error[step] < tol:
             print "Tolerance limit reached, stopping!"
             break
@@ -43,13 +48,9 @@ def NPALSCANDECOMP(X, R, maxsteps=2000, tol=0.000001):
     # C /= c_nrm
 
     errors = error[0: step + 1]
-
+    fac_errors = fac_error[0: step + 1]
     # return (a_nrm * b_nrm * c_nrm, A, B, C, error)
-    print A.shape
-    print B.shape
-    print C.shape
-    print errors.shape
-    return A, B, C, errors
+    return A, B, C, errors, fac_errors
 
 #boring accuracy test examples
 def main():
