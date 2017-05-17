@@ -52,24 +52,24 @@ def Unfold(T, mode="I"):  # implements unfolding
 
 def agradient(T, A, B, C):  # calculates analytic gradient
     # Equations derived from page 12 of Comon
-    gA1 = np.dot(np.kron(np.eye(A.shape[0], A.shape[1]),
+    gA1 = np.dot(np.kron(np.eye(A.shape[0]),
                          np.multiply(np.dot(C.T, C), np.dot(B.T, B))),
                  A.T.flatten())
-    gA2 = np.dot(np.kron(np.eye(A.shape[0], A.shape[1]), KR(C, B)).T,
+    gA2 = np.dot(np.kron(np.eye(A.shape[0]), KR(C, B)).T,
                  Unfold(T, mode="J").fgggGlatten())
     gA = gA1 + gA2
 
-    gB1 = np.dot(np.kron(np.eye(B.shape[0], B.shape[1]),
+    gB1 = np.dot(np.kron(np.eye(B.shape[0]),
                          np.multiply(np.dot(A.T, A), np.dot(C.T, C))),
                  B.T.flatten())
-    gB2 = np.dot(np.kron(np.eye(B.shape[0], B.shape[1]), KR(A, C)).T,
+    gB2 = np.dot(np.kron(np.eye(B.shape[0]), KR(A, C)).T,
                  Unfold(T, mode="K").flatten())
     gB = gB1 + gB2
 
-    gC1 = np.dot(np.kron(np.eye(C.shape[0], C.shape[1]),
+    gC1 = np.dot(np.kron(np.eye(C.shape[0]),
                          np.multiply(np.dot(B.T, B), np.dot(A.T, A))),
                  C.T.flatten())
-    gC2 = np.dot(np.kron(np.eye(C.shape[0], C.shape[1]), KR(B, A)).T,
+    gC2 = np.dot(np.kron(np.eye(C.shape[0]), KR(B, A)).T,
                  Unfold(T, mode="I").flatten())
     gC = gC1 + gC2
     return gA, gB, gC
