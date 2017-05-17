@@ -20,12 +20,12 @@ def NPALSCANDECOMP(X, R, maxtime = 0, maxsteps=2000, tol=0.000001):
     Y = np.einsum('ir,jr,kr->ijk', A, B, C)
     X_sq = np.linalg.norm(X)
 
-    A_record = []
-    B_record = []
-    C_record = []
-    A_record.append(A)
-    B_record.append(B)
-    C_record.append(C)
+    A_history = []
+    B_history = []
+    C_history = []
+    A_history.append(A)
+    B_history.append(B)
+    C_history.append(C)
 
     step = 0
     error = np.zeros(maxsteps + 1)
@@ -38,9 +38,9 @@ def NPALSCANDECOMP(X, R, maxtime = 0, maxsteps=2000, tol=0.000001):
         Y = np.einsum('ir,jr,kr->ijk',A,B,C)
         error[step] = np.linalg.norm(X-Y)**2/X_sq
 
-        A_record.append(A)
-        B_record.append(B)
-        C_record.append(C)
+        A_history.append(A)
+        B_history.append(B)
+        C_history.append(C)
 
         if tol > 0 and error[step - 1] - error[step] < tol:
             break
@@ -59,10 +59,10 @@ def NPALSCANDECOMP(X, R, maxtime = 0, maxsteps=2000, tol=0.000001):
     r["A"] = A
     r["B"] = B
     r["C"] = C
-    r["errors"] = errors
-    r["A_record"] = A_record
-    r["B_record"] = B_record
-    r["C_record"] = C_record
+    r["error_history"] = errors
+    r["A_history"] = A_history
+    r["B_history"] = B_history
+    r["C_history"] = C_history
     return r
 
 if __name__=="__main__":
