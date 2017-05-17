@@ -1,7 +1,6 @@
 import numpy as np
 from utils import *
-from TFGDCANDECOMP import *
-from FOOCANDECOMP import *
+from NPCANDECOMP import *
 
 #boring accuracy test examples
 X = NormalTensorComposition((10, 10, 10), 5)

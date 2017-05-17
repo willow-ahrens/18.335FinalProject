@@ -1,61 +1,47 @@
+import os
+import tensorflow as tf
+#tf.logging.set_verbosity(tf.logging.ERROR)
 import numpy as np
-from utils import *
 from scipy.optimize import fmin
 
-def r1(gM, M):
-    return (gM.reshape(M.shape[1],M.shape[0])).T
+guess = 0.01
 
-def r2(gM, M):
-    return gM.reshape(M.shape[0],M.shape[1])
-
-def obj(lr, X, A, B, C, gA, gB, gC):
-    Anew = A - lr * gA
-    Bnew = B - lr * gB
-    Cnew = C - lr * gC
-    Y = np.einsum('ir,jr,kr->ijk',A,B,C)
-    return np.linalg.norm(X-Y)**2
-
-def NPGDCANDECOMP(X, R, maxsteps=5000, lr=0.0001, tol=np.finfo(float).eps, ELS=False,true=None):
-    I, J, K = X.shape
-    A = np.random.randn(I, R)
-    B = np.random.randn(J, R)
-    C = np.random.randn(K, R)
+def NPGDCANDECOMP(X, R, maxsteps=5000, tol=0.0001):
+    A = np.random.randn(X.shape[0], R)
+    B = np.random.randn(X.shape[1], R)
+    C = np.random.randn(X.shape[2], R)
     Y = np.einsum('ir,jr,kr->ijk', A, B, C)
-    step = 0
-    M = np.vstack([true[0], true[1], true[2]])
-    M_hat = np.vstack([A, B, C])
+    loss = np.sum((X - Y)**2)
+
+    X_sq = np.sum(X**2)
+
+    stepsize = guess
+
     error = np.zeros(maxsteps + 1)
-    error[0] = np.linalg.norm(X-Y)**2
-    fac_error = np.zeros(maxsteps + 1)
-    fac_error[0], _ = exact_factor_acc(M_hat, M)
+    step = 0
+    error[0] = loss/X_sq
     while step < maxsteps:
         step += 1
-        gA, gB, gC = agradient(X, A, B, C)
-        gAr, gBr, gCr = r1(gA, A), r1(gB, B), r1(gC, C)
-        if ELS:
-            lrg = 0.001
-            lr = fmin(func=obj, x0=[lrg],
-                      args=(X, A, B, C, gAr, gBr, gCr))
-            A, B, C = A - lr*gAr, B - lr*gBr, C - lr*gCr
-        else:
-            A, B, C = A - lr*gAr, B - lr*gBr, C - lr*gCr
+        gA = 2 * (np.einsum('lt,jt,kt,js,ks->ls',A,B,C,B,C) - np.einsum('ljk,js,ks->ls',X,B,C))
+        gB = 2 * (np.einsum('it,lt,kt,is,ks->ls',A,B,C,A,C) - np.einsum('ilk,is,ks->ls',X,A,C))
+        gC = 2 * (np.einsum('it,jt,lt,is,js->ls',A,B,C,A,B) - np.einsum('ijl,is,js->ls',X,A,B))
+        stepsize = fmin(lambda stepsize: np.sum((X - np.einsum('ir,jr,kr->ijk', A - stepsize*gA, B - stepsize*gB, C - stepsize*gC))**2), stepsize, disp=False)
+        A -= gA * stepsize
+        B -= gB * stepsize
+        C -= gC * stepsize
         Y = np.einsum('ir,jr,kr->ijk', A, B, C)
-        e = np.linalg.norm(X-Y)**2
-        error[step] = e
-        M_hat = np.vstack([A, B, C])
-        fac_error[step], _ = exact_factor_acc(M_hat, M)
+        loss = np.sum((X - Y)**2)
+        error[step] = loss/X_sq
         if error[step - 1] - error[step] < tol:
-            print "Tolerance limit reached, stopping!"
             break
-        #print(type(e))
-    # a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
-    # A /= a_nrm
-    # b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
-    # B /= b_nrm
-    # c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
-    # C /= c_nrm
 
-    errors = error[0: step + 1]
-    fac_errors = fac_error[0: step + 1]
-    # return (a_nrm * b_nrm * c_nrm, A, B, C, error)
-    return A, B, C, errors, fac_errors
+    a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
+    A /= a_nrm
+    b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
+    B /= b_nrm
+    c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
+    C /= c_nrm
+
+    error = error[0: step + 1]
+
+    return (a_nrm * b_nrm * c_nrm, A, B, C, error)
