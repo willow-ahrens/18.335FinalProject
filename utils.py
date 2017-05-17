@@ -94,7 +94,7 @@ def largest_norm(M):
     return np.argmax(col_norms)
 
 
-def exact_factor_acc(s_hat, M_hat, s, M):
+def exact_factor_acc(M_hat, M):
     assert M_hat.shape == M.shape, "Factor matrix \
     shapes don't match!"
     ncols = M.shape[1]
@@ -106,8 +106,22 @@ def exact_factor_acc(s_hat, M_hat, s, M):
         errors[i] = delta(M[:, perm], M_hat)
     #print errors
     min_idx = np.argmin(errors)
-    return errors[min_idx], perms[min_idx]
+    return errors[min_idx]
 
+
+def factor_acc_history(results, ground_truth):
+    A_hat_history, B_hat_history, C_hat_history = results["A_history"], results["B_history"], results["C_history"]
+    A,B,C = ground_truth[0], ground_truth[1], ground_truth[2]
+    M = np.vstack([A,B,C])
+    factor_acc = []
+    assert len(A_hat_history) == len(B_hat_history) == len(C_hat_history)
+    for i in range(len(A_hat_history)):
+        A_hat = A_hat_history[i]
+        B_hat = B_hat_history[i]
+        C_hat = C_hat_history[i]
+        M_hat = np.vstack([A_hat, B_hat, C_hat])
+        factor_acc.append(exact_factor_acc(M_hat, M))
+    return np.asarray(factor_acc)
 
 def greedy_factor_acc(M_hat, M):
     # TODO: IMPLEMENT the greedy factor matrix distance
