@@ -56,7 +56,7 @@ def agradient(T, A, B, C):  # calculates analytic gradient
                          np.multiply(np.dot(C.T, C), np.dot(B.T, B))),
                  A.T.flatten())
     gA2 = np.dot(np.kron(np.eye(A.shape[0]), KR(C, B)).T,
-                 Unfold(T, mode="J").fgggGlatten())
+                 Unfold(T, mode="J").flatten())
     gA = gA1 + gA2
 
     gB1 = np.dot(np.kron(np.eye(B.shape[0]),
@@ -102,12 +102,12 @@ def exact_factor_acc(M_hat, M):
     shapes don't match!"
     ncols = M.shape[1]
     perms = list(itertools.permutations(range(ncols)))
-    print perms
+    #print perms
     errors = np.zeros(len(perms))
     for i, perm in enumerate(perms):
         perm = np.asarray(list(perm))
         errors[i] = delta(M[:, perm], M_hat)
-    print errors
+    #print errors
     min_idx = np.argmin(errors)
     return errors[min_idx], perms[min_idx]
 

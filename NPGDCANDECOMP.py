@@ -1,6 +1,6 @@
 import numpy as np
 from utils import *
-from scipy.opimitze import fmin
+from scipy.optimize import fmin
 
 def r1(gM, M):
     return (gM.reshape(M.shape[1],M.shape[0])).T
@@ -15,7 +15,7 @@ def obj(lr, X, A, B, C, gA, gB, gC):
     Y = np.einsum('ir,jr,kr->ijk',A,B,C)
     return np.linalg.norm(X-Y)**2
 
-def NPGDCANDECOMP(X, R, maxsteps=5000, lr=0.0001, tol=0.000001, ELS=False,true=None):
+def NPGDCANDECOMP(X, R, maxsteps=5000, lr=0.0001, tol=np.finfo(float).eps, ELS=False,true=None):
     I, J, K = X.shape
     A = np.random.randn(I, R)
     B = np.random.randn(J, R)
