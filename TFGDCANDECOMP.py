@@ -4,7 +4,7 @@ import numpy as np
 import time
 import test
 
-def TFGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
+def TFGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001, stepsize = 0.001):
     T = tf.as_dtype(X.dtype)
     A = tf.Variable(tf.random_normal((X.shape[0], R), dtype=T), dtype = T)
     B = tf.Variable(tf.random_normal((X.shape[1], R), dtype=T), dtype = T)
@@ -20,7 +20,7 @@ def TFGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
     B_history.append(B)
     C_history.append(C)
 
-    optimizer = tf.train.GradientDescentOptimizer(0.0001)
+    optimizer = tf.train.GradientDescentOptimizer(stepsize)
     train = optimizer.minimize(loss)
     init = tf.global_variables_initializer()
     sess = tf.Session()
