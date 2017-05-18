@@ -117,10 +117,9 @@ def exact_factor_acc(M_hat, M, return_perm=False):
         return errors[min_idx]
 
 
-def factor_acc_history(results, ground_truth):
+def factor_acc_history(results, A,B,C):
     # results is results dict, ground truth is an array with [A,B,C]
     A_hat_history, B_hat_history, C_hat_history = results["A_history"], results["B_history"], results["C_history"]
-    A,B,C = ground_truth[0], ground_truth[1], ground_truth[2]
     # a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
     # b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
     # c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
