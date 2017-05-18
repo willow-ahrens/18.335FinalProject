@@ -26,9 +26,10 @@ def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001, els = False, ste
     while maxsteps == 0 or step < maxsteps:
         tic = time.clock()
         step += 1
-        gA = 2 * (np.einsum('lt,jt,kt,js,ks->ls',A,B,C,B,C) - np.einsum('ljk,js,ks->ls',X,B,C))
-        gB = 2 * (np.einsum('it,lt,kt,is,ks->ls',A,B,C,A,C) - np.einsum('ilk,is,ks->ls',X,A,C))
-        gC = 2 * (np.einsum('it,jt,lt,is,js->ls',A,B,C,A,B) - np.einsum('ijl,is,js->ls',X,A,B))
+        diff = Y - X
+        gA = 2 * (np.einsum('ljk,js,ks->ls',diff,B,C))
+        gB = 2 * (np.einsum('ilk,is,ks->ls',diff,A,C))
+        gC = 2 * (np.einsum('ijl,is,js->ls',diff,A,B))
         if els:
           stepsize = fmin(lambda stepsize: np.sum((X - np.einsum('ir,jr,kr->ijk', A - stepsize*gA, B - stepsize*gB, C - stepsize*gC))**2), stepsize, ftol=error[-1]/100, xtol=stepsize/100, disp=False)
         A -= gA * stepsize
