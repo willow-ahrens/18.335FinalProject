@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 from scipy.linalg import pinv
 from utils import *
@@ -19,14 +20,14 @@ def NPALSCANDECOMP(X, R, maxtime = 0, maxsteps=2000, tol=0.000001):
     B = np.random.randn(J, R)
     C = np.random.randn(K, R)
     Y = np.einsum('ir,jr,kr->ijk', A, B, C)
-    X_sq = np.linalg.norm(X)
+    X_sq = np.linalg.norm(X)**2
 
     A_history = []
     B_history = []
     C_history = []
-    A_history.append(A)
-    B_history.append(B)
-    C_history.append(C)
+    A_history.append(copy.deepcopy(A))
+    B_history.append(copy.deepcopy(B))
+    C_history.append(copy.deepcopy(C))
 
     step = 0
     error = np.zeros(maxsteps + 1)
@@ -43,9 +44,9 @@ def NPALSCANDECOMP(X, R, maxtime = 0, maxsteps=2000, tol=0.000001):
         toc = time.clock()
 
         elapsed += toc - tic
-        A_history.append(A)
-        B_history.append(B)
-        C_history.append(C)
+        A_history.append(copy.deepcopy(A))
+        B_history.append(copy.deepcopy(B))
+        C_history.append(copy.deepcopy(C))
 
         if tol > 0 and error[step - 1] - error[step] < tol:
             break

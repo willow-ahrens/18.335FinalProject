@@ -16,9 +16,9 @@ def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
     A_history = []
     B_history = []
     C_history = []
-    A_history.append(A)
-    B_history.append(B)
-    C_history.append(C)
+    A_history.append(copy.deepcopy(A))
+    B_history.append(copy.deepcopy(B))
+    C_history.append(copy.deepcopy(C))
 
     stepsize = 0.01 #initial stepsize guess
 
@@ -32,7 +32,7 @@ def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
         gA = 2 * (np.einsum('lt,jt,kt,js,ks->ls',A,B,C,B,C) - np.einsum('ljk,js,ks->ls',X,B,C))
         gB = 2 * (np.einsum('it,lt,kt,is,ks->ls',A,B,C,A,C) - np.einsum('ilk,is,ks->ls',X,A,C))
         gC = 2 * (np.einsum('it,jt,lt,is,js->ls',A,B,C,A,B) - np.einsum('ijl,is,js->ls',X,A,B))
-        #stepsize = fmin(lambda stepsize: np.sum((X - np.einsum('ir,jr,kr->ijk', A - stepsize*gA, B - stepsize*gB, C - stepsize*gC))**2), stepsize, disp=False)
+        stepsize = fmin(lambda stepsize: np.sum((X - np.einsum('ir,jr,kr->ijk', A - stepsize*gA, B - stepsize*gB, C - stepsize*gC))**2), stepsize, disp=False)
         A -= gA * stepsize
         B -= gB * stepsize
         C -= gC * stepsize
@@ -64,6 +64,7 @@ def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
     results["B_history"] = B_history
     results["C_history"] = C_history
     results["time"] = elapsed
+    print(A_history[0] == A_history[-1])
     return results
 
 if __name__=="__main__":

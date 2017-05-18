@@ -89,7 +89,8 @@ def min_delta(u, v):
     return np.linalg.norm(u - (np.dot(v.T, u)/np.dot(v.T, v))*(v))
 
 
-def np
+def delta2(u,v):
+    return np.linalg.norm(u-v)
 
 def largest_norm(M):
     col_norms = np.linalg.norm(M, axis=0)
@@ -105,7 +106,8 @@ def exact_factor_acc(M_hat, M):
     errors = np.zeros(len(perms))
     for i, perm in enumerate(perms):
         perm = np.asarray(list(perm))
-        errors[i] = delta(M[:, perm], M_hat)
+        # errors[i] = delta(M[:, perm], M_hat)
+        errors[i] = delta2(M[:, perm], M_hat)
     #print errors
     min_idx = np.argmin(errors)
     return errors[min_idx]
