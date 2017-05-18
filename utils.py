@@ -89,12 +89,15 @@ def min_delta(u, v):
     return np.linalg.norm(u - (np.dot(v.T, u)/np.dot(v.T, v))*(v))
 
 
+def delta2(u,v):
+    return np.linalg.norm(u-v)
+
 def largest_norm(M):
     col_norms = np.linalg.norm(M, axis=0)
     return np.argmax(col_norms)
 
 
-def exact_factor_acc(s_hat, M_hat, s, M):
+def exact_factor_acc(M_hat, M):
     assert M_hat.shape == M.shape, "Factor matrix \
     shapes don't match!"
     ncols = M.shape[1]
@@ -103,11 +106,38 @@ def exact_factor_acc(s_hat, M_hat, s, M):
     errors = np.zeros(len(perms))
     for i, perm in enumerate(perms):
         perm = np.asarray(list(perm))
-        errors[i] = delta(M[:, perm], M_hat)
+        # errors[i] = delta(M[:, perm], M_hat)
+        errors[i] = delta2(M[:, perm], M_hat)
     #print errors
     min_idx = np.argmin(errors)
-    return errors[min_idx], perms[min_idx]
+    return errors[min_idx]
 
+
+def factor_acc_history(results, ground_truth):
+    A_hat_history, B_hat_history, C_hat_history = results["A_history"], results["B_history"], results["C_history"]
+    A,B,C = ground_truth[0], ground_truth[1], ground_truth[2]
+    a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
+    b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
+    c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
+    A = A/a_nrm
+    B = B/b_nrm
+    C = C/c_nrm
+    M = np.vstack([A,B,C])
+    factor_acc = []
+    assert len(A_hat_history) == len(B_hat_history) == len(C_hat_history)
+    for i in range(len(A_hat_history)):
+        A_hat = A_hat_history[i]
+        B_hat = B_hat_history[i]
+        C_hat = C_hat_history[i]
+        a_hat_nrm = np.linalg.norm(A_hat, ord = 2, axis = 0)
+        b_hat_nrm = np.linalg.norm(B_hat, ord = 2, axis = 0)
+        c_hat_nrm = np.linalg.norm(C_hat, ord = 2, axis = 0)
+        A_hat = A_hat/a_hat_nrm
+        B_hat = B_hat/b_hat_nrm
+        C_hat = C_hat/c_hat_nrm
+        M_hat = np.vstack([A_hat, B_hat, C_hat])
+        factor_acc.append(exact_factor_acc(M_hat, M))
+    return np.asarray(factor_acc)
 
 def greedy_factor_acc(M_hat, M):
     # TODO: IMPLEMENT the greedy factor matrix distance
