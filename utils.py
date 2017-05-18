@@ -117,7 +117,7 @@ def exact_factor_acc(M_hat, M, return_perm=False):
         return errors[min_idx]
 
 
-def factor_acc_history(results, A,B,C):
+def factor_error_history(results, A,B,C):
     # results is results dict, ground truth is an array with [A,B,C]
     A_hat_history, B_hat_history, C_hat_history = results["A_history"], results["B_history"], results["C_history"]
     # a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
@@ -141,7 +141,7 @@ def factor_acc_history(results, A,B,C):
         # C_hat = C_hat/c_hat_nrm
         M_hat = np.vstack([A_hat, B_hat, C_hat])
         factor_acc.append(exact_factor_acc(M_hat, M))
-    results["factor_error"] = np.asarray(factor_acc)
+    results["factor_error_history"] = np.asarray(factor_acc)
     return results
 
 def greedy_factor_acc(M_hat, M):

@@ -13,18 +13,19 @@ def TFGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001, stepsize = 0.001
     loss = tf.norm(X-Y)**2
     X_sq = np.linalg.norm(X)**2
 
-    A_history = []
-    B_history = []
-    C_history = []
-    A_history.append(A)
-    B_history.append(B)
-    C_history.append(C)
-
     optimizer = tf.train.GradientDescentOptimizer(stepsize)
     train = optimizer.minimize(loss)
     init = tf.global_variables_initializer()
     sess = tf.Session()
     sess.run(init, {})
+
+    A_history = []
+    B_history = []
+    C_history = []
+    (A_out, B_out, C_out) = sess.run([A, B, C], {})
+    A_history.append(A_out)
+    B_history.append(B_out)
+    C_history.append(C_out)
 
     step = 0
     error = [sess.run(loss, {})/X_sq]
