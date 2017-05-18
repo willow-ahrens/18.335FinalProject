@@ -8,7 +8,7 @@ from NPALSCANDECOMP import NPALSCANDECOMP
 from utils import *
 
 #Important plotting parameters:
-trials = 1 #Number of trials when benchmarking
+trials = 10 #Number of trials when benchmarking
 nbars = 10 #Approximately how many bars to use
 
 n_1 = 20
@@ -19,30 +19,35 @@ tensors = [{"name" : "BigCube",
             "rank" : R,
             "ranktype" : "true",
             "data" : lambda : NormalTensorComposition((n_1, n_1, n_1), R),
-            "time" : 20},
-           {"name" : "Pancake",
-            "rank" : R,
-            "ranktype" : "true",
-            "data" : lambda : NormalTensorComposition((n_1, n_1, n_2), R),
-            "time" : 20},
-           {"name" : "Burrito",
-            "rank" : R,
-            "ranktype" : "true",
-            "data" : lambda : NormalTensorComposition((n_1, n_2, n_2), R),
-            "time" : 20},
-           {"name" : "SmallCube",
-            "rank" : R,
-            "ranktype" : "true",
-            "data" : lambda : NormalTensorComposition((n_2, n_2, n_2), R),
-            "time" : 20}]
+            "time" : 3}]
+
+"""
+{"name" : "Pancake",
+"rank" : R,
+"ranktype" : "true",
+"data" : lambda : NormalTensorComposition((n_1, n_1, n_2), R),
+"time" : 20},
+{"name" : "Burrito",
+"rank" : R,
+"ranktype" : "true",
+"data" : lambda : NormalTensorComposition((n_1, n_2, n_2), R),
+"time" : 20},
+{"name" : "SmallCube",
+"rank" : R,
+"ranktype" : "true",
+"data" : lambda : NormalTensorComposition((n_2, n_2, n_2), R),
+"time" : 10}
+"""
 
 decomps = [
            {"name"  : "Alternating Least Squares",
             "color" : "blue",
             "kwargs": {},
+            "bound" : lambda n: 3*n*n*(7*n*n + n) + 3*n*n*n*n + 3*n*(n*n + n) + 11 * n * n * n,
             "func"  : NPALSCANDECOMP},
            {"name"  : "Gradient Descent",
             "color" : "green",
+            "bound" : lambda n: 9*n*n + 9*n*n*n*n + 15 * n * n * n * n * n,
             "kwargs": {"stepsize" : 0.0001, "els" : False},
             "func"  : NPGDCANDECOMP},
            {"name"  : "Gradient Descent ELS",
@@ -90,8 +95,7 @@ for tensor in tensors:
     plt.ylabel('Relative Sum Of Squared Residual Error')
     plt.title('Sum Of Squared Error vs. Time To Factorize Rank %d Tensor %s' % (tensor["rank"], tensor["name"]))
     plt.legend(loc='best')
-    #plt.savefig(plot_name)
-    plt.show()
+    plt.savefig(plot_name)
     plt.clf()
 
 #Plot 2
@@ -105,14 +109,14 @@ for decomp in decomps[0:2]:
 
     times = []
     bounds = []
-    for n in range(0, 10):
-      X = NormalTensorComposition((n, n, n), n)
-      results = decomp["func"](X, n, tol = 0, maxtime = 0.1, maxsteps = 0, **decomp["kwargs"])
-      times.append(decomp["time"]/len(decomp["error_history"]))
-      bounds.append(decomp["bound"](n))
+    for n in range(1, 64):
+        X = NormalTensorComposition((n, n, n), n)
+        results = decomp["func"](X, n, tol = 0, maxtime = 0.1, maxsteps = 0, **decomp["kwargs"])
+        times.append(results["time"]/len(results["error_history"]))
+        bounds.append(decomp["bound"](n) /3.3e9)
 
     plt.plot(times, color = decomp["color"], label = decomp["name"])
-    plt.plot(bound, color = decomp["bound_color"], label = "Theoretical Bound")
+    plt.plot(bounds, color = "purple", label = "Theoretical Bound")
 
     plt.xscale("log")
     plt.yscale("log")
@@ -120,6 +124,5 @@ for decomp in decomps[0:2]:
     plt.ylabel('Time Per Iteration (s)')
     plt.xlabel('n')
     plt.legend(loc='best')
-    #plt.savefig(plot_name)
-    plt.show()
+    plt.savefig(plot_name)
     plt.clf()
