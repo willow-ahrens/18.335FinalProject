@@ -21,9 +21,8 @@ def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
 
     stepsize = 0.01 #initial stepsize guess
 
-    error = np.zeros(maxsteps + 1)
     step = 0
-    error[0] = np.linalg.norm(X - Y)**2/X_sq
+    error = [np.linalg.norm(X - Y)**2/X_sq]
     elapsed = 0
     while maxsteps == 0 or step < maxsteps:
         tic = time.clock()
@@ -36,7 +35,7 @@ def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
         B -= gB * stepsize
         C -= gC * stepsize
         Y = np.einsum('ir,jr,kr->ijk', A, B, C)
-        error[step] = np.linalg.norm(X - Y)**2/X_sq
+        error.append(np.linalg.norm(X - Y)**2/X_sq)
         toc = time.clock()
 
         elapsed += toc - tic
@@ -58,7 +57,7 @@ def NPGDCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
     results["A"] = A/a_nrm
     results["B"] = B/b_nrm
     results["C"] = C/c_nrm
-    results["error_history"] = error[0: step + 1]
+    results["error_history"] = error
     results["A_history"] = A_history
     results["B_history"] = B_history
     results["C_history"] = C_history
