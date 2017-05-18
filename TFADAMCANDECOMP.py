@@ -26,15 +26,14 @@ def TFADAMCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
     sess = tf.Session()
     sess.run(init, {})
 
-    error = np.zeros(maxsteps + 1)/X_sq
     step = 0
-    error[0] = sess.run(loss, {})/X_sq
+    error = [sess.run(loss, {})/X_sq]
     elapsed = 0
     while maxsteps == 0 or step < maxsteps:
         tic = time.clock()
         step += 1
         sess.run(train, {})
-        error[step] = sess.run(loss, {})/X_sq
+        error.append(sess.run(loss, {})/X_sq)
         toc = time.clock()
 
         elapsed += toc - tic
@@ -59,7 +58,7 @@ def TFADAMCANDECOMP(X, R, maxtime = 0, maxsteps=5000, tol=0.0001):
     results["A"] = A_out/a_nrm
     results["B"] = B_out/b_nrm
     results["C"] = C_out/c_nrm
-    results["error_history"] = error[0: step + 1]
+    results["error_history"] = error
     results["A_history"] = A_history
     results["B_history"] = B_history
     results["C_history"] = C_history
