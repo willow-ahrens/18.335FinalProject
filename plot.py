@@ -47,11 +47,46 @@ decomps = [
             "kwargs": {"stepsize" : 0.0001},
             "func"  : TFGDCANDECOMP}]
 
+#plot 0
+
+def rc(result):
+    A, B, C = result["A"], result["B"], result["C"]
+    s = result["s"]
+    Y = np.einsum('r,ir,jr,kr->ijk', s, A, B, C)
+    return Y
+
+def tensor_heatmaps(maxtime=0.05,ncol=2):
+    R = 7
+    A = np.random.randn(20,5)
+    B = np.random.randn(20,5)
+    C = np.random.randn(20,5)
+    X = np.einsum('ir,jr,kr->ijk', A, B, C)
+    result_als = NPALSCANDECOMP(X, R, maxtime = maxtime,tol=0)
+    result_gd = NPGDCANDECOMP(X, R, maxtime = maxtime,tol=0, els=False)
+    result_gd_els = NPGDCANDECOMP(X,R, maxtime = maxtime, tol=0, els=True)
+    result_tf = NPGDCANDECOMP(X,R, maxtime = maxtime, tol=0)
+    tensors = [X, rc(result_als), rc(result_gd_els), rc(result_gd), rc(result_tf)]
+    titles = ["Ground truth", "ALS", "GD-ELS", "GD", "TF-GD"]
+    fig, axes = plt.subplots(figsize=(12,12), nrows=ncol, ncols=5)
+    for i, t in enumerate(tensors):
+        for j in range(ncol):
+            axes[j,i].pcolor(t[j,:,:])
+            axes[j,i].set(title="%s slice %i"%(titles[i], j))
+    for ax in axes.flatten():
+        ax.axis('tight')
+    plt.suptitle("Reconstruction of a (20,20,20) Rank 5 Tensor")
+    plt.tight_layout(pad=4.0, w_pad=3.5, h_pad=4.5)
+    plt.savefig("plot0_reconstruction.pdf", dpi=350)
+    plt.clf()
+
+print("Creating plot0_reconstruction...")
+tensor_heatmaps()
 
 #Plot 1
 
 for tensor in tensors:
     plot_name = "plot1_%s.pdf" % tensor["name"]
+    plot_name = plot_name.replace(" ", "_")
     print("Creating %s..." % plot_name)
     x_max = 3.154e+7 #number of seconds in a year
     for decomp in decomps:
@@ -80,19 +115,11 @@ for tensor in tensors:
     plt.title('Sum Of Squared Error vs. Time To Factorize Rank %d Tensor %s' % (tensor["rank"], tensor["name"]))
     plt.legend(loc='best')
 
-    plt.xlim([0, x_max])
-    plt.ylim([0, 2])
-    plt.savefig(plot_name)
-
     plt.yscale("log")
-    plt.xlim([0, x_max])
-    plt.ylim([0, 2])
-    plt.savefig("log"+plot_name)
-
     plt.xscale("log")
     plt.xlim([0, x_max])
     plt.ylim([0, 2.2])
-    plt.savefig("loglog"+plot_name)
+    plt.savefig(plot_name)
     plt.clf()
 
 #plot 2
@@ -100,6 +127,7 @@ for tensor in tensors:
 
 for tensor in tensors:
     plot_name = "plot2_%s.pdf" % tensor["name"]
+    plot_name = plot_name.replace(" ", "_")
     print("Creating %s..." % plot_name)
     x_max = 3.154e+7 #number of seconds in a year
     for decomp in decomps:
@@ -138,6 +166,7 @@ for tensor in tensors:
 
 for decomp in decomps[0:2]:
     plot_name = "plot3_%s.pdf" % decomp["name"]
+    plot_name = plot_name.replace(" ", "_")
     print("Creating %s..." % plot_name)
     x_max = 3.154e+7 #number of seconds in a year
 

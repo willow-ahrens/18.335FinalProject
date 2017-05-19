@@ -63,6 +63,3 @@ def ABC_heatmaps(X,A,B,C,R,maxtime=1,ncol=2):
     A = A/a_nrm
     B = B/b_nrm
     C = C/c_nrm
-    
-    
-

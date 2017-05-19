@@ -90,7 +90,7 @@ def min_delta(u, v):
 
 
 def delta2(u, v):
-    return np.linalg.norm(u-v)
+    return np.linalg.norm(u-v)**2
 
 
 def largest_norm(M):
@@ -107,8 +107,8 @@ def exact_factor_acc(M_hat, M, return_perm=False):
     errors = np.zeros(len(perms))
     for i, perm in enumerate(perms):
         perm = np.asarray(list(perm))
-        # errors[i] = delta(M[:, perm], M_hat)
         errors[i] = delta(M[:, perm], M_hat)
+        #errors[i] = delta2(M[:, perm], M_hat)
     # print errors
     min_idx = np.argmin(errors)
     if return_perm:
@@ -120,12 +120,16 @@ def exact_factor_acc(M_hat, M, return_perm=False):
 def factor_error_history(results, A,B,C):
     # results is results dict, ground truth is an array with [A,B,C]
     A_hat_history, B_hat_history, C_hat_history = results["A_history"], results["B_history"], results["C_history"]
-    # a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
-    # b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
-    # c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
-    # A = A/a_nrm
-    # B = B/b_nrm
-    # C = C/c_nrm
+    a_nrm = np.linalg.norm(A, ord = 2, axis = 0)
+    b_nrm = np.linalg.norm(B, ord = 2, axis = 0)
+    c_nrm = np.linalg.norm(C, ord = 2, axis = 0)
+    #A = A/a_nrm[np.newaxis, :]
+    #B = B/b_nrm[np.newaxis, :]
+    #C = C/c_nrm[np.newaxis, :]
+    #s = (a_nrm * b_nrm * c_nrm)**(1/3)
+    #A = A * s[np.newaxis, :]
+    #B = B * s[np.newaxis, :]
+    #C = C * s[np.newaxis, :]
     M = np.vstack([A,B,C])
     factor_acc = []
     assert len(A_hat_history) == len(B_hat_history) == len(C_hat_history)
@@ -133,12 +137,16 @@ def factor_error_history(results, A,B,C):
         A_hat = A_hat_history[i]
         B_hat = B_hat_history[i]
         C_hat = C_hat_history[i]
-        # a_hat_nrm = np.linalg.norm(A_hat, ord = 2, axis = 0)
-        # b_hat_nrm = np.linalg.norm(B_hat, ord = 2, axis = 0)
-        # c_hat_nrm = np.linalg.norm(C_hat, ord = 2, axis = 0)
-        # A_hat = A_hat/a_hat_nrm
-        # B_hat = B_hat/b_hat_nrm
-        # C_hat = C_hat/c_hat_nrm
+        #a_hat_nrm = np.linalg.norm(A_hat, ord = 2, axis = 0)
+        #b_hat_nrm = np.linalg.norm(B_hat, ord = 2, axis = 0)
+        #c_hat_nrm = np.linalg.norm(C_hat, ord = 2, axis = 0)
+        #s_hat = (a_hat_nrm * b_hat_nrm * c_hat_nrm)**(1/3)
+        #A_hat = A_hat/a_hat_nrm[np.newaxis, :]
+        #B_hat = B_hat/b_hat_nrm[np.newaxis, :]
+        #C_hat = C_hat/c_hat_nrm[np.newaxis, :]
+        #A_hat = A_hat * s_hat[np.newaxis, :]
+        #B_hat = B_hat * s_hat[np.newaxis, :]
+        #C_hat = C_hat * s_hat[np.newaxis, :]
         M_hat = np.vstack([A_hat, B_hat, C_hat])
         factor_acc.append(exact_factor_acc(M_hat, M))
     results["factor_error_history"] = np.asarray(factor_acc)
